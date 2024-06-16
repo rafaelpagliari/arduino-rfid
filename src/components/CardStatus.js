@@ -4,18 +4,27 @@ import axios from 'axios';
 function CardStatus() {
     const [ultimoCartao, setUltimoCartao] = useState(null);
 
-    useEffect(() => {
-        async function fetchUltimoCartao() {
-            try {
-                const response = await axios.get('http://186.237.57.106:3001/api/cartao/ultimo-cartao');
-                setUltimoCartao(response.data);
-            } catch (error) {
-                console.error('Erro ao buscar último cartão:', error);
-            }
+    // Função para buscar o último cartão e atualizar o estado
+    const fetchUltimoCartao = async () => {
+        try {
+            const response = await axios.get('http://186.237.57.106:3001/api/cartao/ultimo-cartao');
+            setUltimoCartao(response.data);
+        } catch (error) {
+            console.error('Erro ao buscar último cartão:', error);
         }
+    };
 
-        fetchUltimoCartao();
-    }, []);
+    // Função que executa fetchUltimoCartao inicialmente e a cada 10 segundos
+    useEffect(() => {
+        fetchUltimoCartao(); // Primeira chamada ao carregar o componente
+
+        const interval = setInterval(() => {
+            fetchUltimoCartao(); // Chama a função a cada 10 segundos
+        }, 2000); // Intervalo de 10 segundos em milissegundos
+
+        // Função de limpeza do setInterval para evitar vazamentos de memória
+        return () => clearInterval(interval);
+    }, []); // A dependência vazia [] indica que o useEffect é executado apenas uma vez
 
     return (
         <div>
