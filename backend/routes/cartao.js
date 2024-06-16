@@ -106,4 +106,32 @@ router.post('/verificar-cartao', async (req, res) => {
     }
 });
 
+router.get('/ultimo-cartao', async (req, res) => {
+    try {
+        // Consulta para obter o uuid e a data da última leitura na tabela logs
+        const queryLogs = 'SELECT uuid, data FROM logs ORDER BY data DESC LIMIT 1';
+        const resultLogs = await pool.query(queryLogs);
+
+        if (resultLogs.rows.length > 0) {
+            const { uuid, data } = resultLogs.rows[0];
+
+            // Consulta para obter o status na tabela cartao usando o uuid obtido
+            const queryCartao = 'SELECT status FROM cartao WHERE uuid = $1';
+            const resultCartao = await pool.query(queryCartao, [uuid]);
+
+            if (resultCartao.rows.length > 0) {
+                const { status } = resultCartao.rows[0];
+                res.json({ uuid, data, status });
+            } else {
+                res.status(404).json({ error: 'Status do cartão não encontrado' });
+            }
+        } else {
+            res.status(404).json({ error: 'Nenhuma leitura de cartão encontrada' });
+        }
+    } catch (error) {
+        console.error('Erro ao obter última leitura de cartão:', error);
+        res.status(500).json({ error: 'Erro ao obter última leitura de cartão' });
+    }
+});
+
 module.exports = router;
