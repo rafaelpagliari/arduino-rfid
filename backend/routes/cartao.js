@@ -134,4 +134,25 @@ router.get('/ultimo-cartao', async (req, res) => {
     }
 });
 
+// Atualizar status do cartão
+router.put('/updatestatus', async (req, res) => {
+    const { uuid, status } = req.body;
+    const client = await pool.connect();
+    try {
+        const query = 'UPDATE cartao SET status = $1 WHERE uuid = $2';
+        const result = await client.query(query, [status, uuid]);
+        if (result.rowCount === 0) {
+            res.status(404).json({ error: 'Cartão não encontrado' });
+        } else {
+            res.status(200).json({ message: 'Status atualizado com sucesso' });
+        }
+    } catch (err) {
+        console.error('Erro ao atualizar status do cartão:', err);
+        res.status(500).json({ error: 'Erro ao atualizar status do cartão' });
+    } finally {
+        client.release();
+    }
+});
+
+
 module.exports = router;
